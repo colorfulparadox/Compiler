@@ -19,7 +19,8 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 clean:
-	rm -rf $(BUILD_DIR) $(PROJECT_NAME) compile_commands.json
+	rm -rf $(BUILD_DIR) $(PROJECT_NAME) #
+#compile_commands.json
 
 
 # bear

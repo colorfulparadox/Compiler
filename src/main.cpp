@@ -13,8 +13,8 @@ int main(int argv, char **argc) {
     lexer.TokenizeInput();
 
     Parser parser(lexer);
-    auto* exe = parser.Parse();
-    exe->Run();
+    auto exe = parser.Parse();
+    exe.Run();
 
     return EXIT_SUCCESS;
 }

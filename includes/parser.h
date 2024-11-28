@@ -14,8 +14,8 @@ class Parser {
 public:
     Parser(const Lexer& lexer) : tokens(lexer.GetTokens()), _lexer(lexer) {}
 
-    void ParseScope(Executer* executer );
-    Executer* Parse();
+    void ParseScope(Executer& executer );
+    Executer Parse();
 
 private:
     uint32_t pos = 0;
@@ -32,7 +32,7 @@ private:
         const Token* token = &tokens[pos];
 
         if (token->type == expectedToken) {
-            std::cout << "GOT TOKEN: " << token->ToString() << "\n";
+            //std::cout << "GOT TOKEN: " << token->ToString() << "\n";
             pos += 1;
             return;
         }

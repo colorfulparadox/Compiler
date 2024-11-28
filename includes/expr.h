@@ -16,34 +16,36 @@ private:
 
 class ExprOP : public ExprNode {
 public:
-    ExprOP(const Token& token) : value(token.lexeme[0]) {}
+    TokenType type;
+    ExprOP(const Token& token) : type(token.type), value(token.lexeme[0]) {}
 
     void SetLeft(int val) {
-        this->left = val;
+        this->left_val = val;
     }
 
     void SetRight(int val) {
-        this->right = val;
+        this->right_val = val;
     }
 
     virtual int GetValue() {
         switch (this->value) {
             case '+':
-                return left + right;
+                return left_val + right_val;
             case '-':
-                return left - right;
+                return left_val - right_val;
             case '*':
-                return left * right;
+                return left_val * right_val;
             case '/':
-                return left / right;
+                //std::cout << "left val: " << left_val << "right_val: " << right_val << "\n";
+                return left_val / right_val;
             default:
                 return -1;
         }
     }
 private:
     const char value;
-    int left;
-    int right;
+    int left_val;
+    int right_val;
 };
 
 

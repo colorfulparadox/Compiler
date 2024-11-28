@@ -55,14 +55,19 @@ private:
 static int RunExpr(ExprNode* node, Scope* scope) {
     int result = 0;
 
-    if (dynamic_cast<ExprNum*>(node)) {
+    if (dynamic_cast<ExprOP*>(node)) {
+        ExprOP* op = (ExprOP*) node;
+        op->SetLeft(RunExpr(node->left, scope));
+        op->SetRight(RunExpr(node->right, scope));
+        result = op->GetValue();
+    }
+    else if (dynamic_cast<ExprNum*>(node)) {
         result = node->GetValue();
     }
     else if (dynamic_cast<ExprVarAccess*>(node)){
         uint32_t offset = node->GetValue();
         result = scope->GetValue(offset);
     }
-
     return result;
 }
 

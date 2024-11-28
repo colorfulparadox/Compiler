@@ -54,7 +54,6 @@ void Lexer::TokenizeInput() {
         token = getNextToken();
         tokens.push_back(token);
         //token.Print(); 
-        //if (token.type == ERROR) exit(1);
     }
 }
 
