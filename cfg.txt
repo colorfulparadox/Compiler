@@ -1,0 +1,13 @@
+NUM -> digit digit | ε
+ID -> _letter | letter | (letter | digit)*
+
+OP -> + | - | * | / 
+EXPR -> NUM | ID
+EXPR -> EXPR OP EXPR   
+EXPR -> ( EXPR OP EXPR )
+
+VAR-INIT -> let ID = EXPR;
+VAR-ASSIGN = ID = EXPR;
+VAR-ACCESS = ID
+
+OUTPUT -> Print(VAR-ACCESS)
