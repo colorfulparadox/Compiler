@@ -68,7 +68,7 @@ static int RunExpr(ExprNode* node, Scope* scope) {
 
 class CodeNode {
 public:
-    virtual void execute(Scope *scope) = 0;
+    virtual CodeNode* execute(Scope *scope) = 0;
     CodeNode *next = NULL;
 private:
 };
@@ -76,9 +76,10 @@ private:
 class CodeVarInit : public CodeNode { 
 public:
     CodeVarInit(uint32_t offset, ExprNode* node) : varOffset(offset), expr(node) {}
-    virtual void execute(Scope *scope) {
+    virtual CodeNode* execute(Scope *scope) {
         int result = RunExpr(expr, scope);
         scope->AddValueAt(varOffset, result);
+        return this->next;
     }
 private:
     uint32_t varOffset;
@@ -88,10 +89,11 @@ private:
 class CodeVarAssign : public CodeNode { 
 public:
     CodeVarAssign(uint32_t offset, ExprNode* node) : varOffset(offset), expr(node) {}
-    virtual void execute(Scope *scope) {
+    virtual CodeNode* execute(Scope *scope) {
         //solve exprNode
         int result = RunExpr(expr, scope);
         scope->AddValueAt(varOffset, result);
+        return this->next;
     }
 private:
     uint32_t varOffset;
@@ -101,10 +103,11 @@ private:
 class CodePrint : public CodeNode {
 public:
     CodePrint(ExprNode *node) : expr(node) {}
-    virtual void execute(Scope *scope) {
+    virtual CodeNode* execute(Scope *scope) {
         //solve exprNode
         int result = RunExpr(expr, scope);
         std::cout << result << "\n";
+        return this->next;
     }
 private:
     ExprNode *expr;
@@ -136,8 +139,7 @@ public:
         std::cout << "CODE EXE STARTED\n";
         CodeNode *node = head;
         while (node != NULL) {
-            node->execute(this->scope);
-            node = node->next;
+            node = node->execute(this->scope);
         }
         std::cout << "CODE EXE ENDED\n";
     }

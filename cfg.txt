@@ -11,3 +11,17 @@ VAR-ASSIGN = ID = EXPR;
 VAR-ACCESS = ID
 
 OUTPUT -> Print(VAR-ACCESS)
+
+
+
+
+
+
+func test() {
+
+    func a() {
+
+    }
+
+    a()
+}

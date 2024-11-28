@@ -1,10 +1,15 @@
 #include<stdlib.h>
+#include <fstream>
 
 #include"lexer.h"
 #include"parser.h"
 
 int main(int argv, char **argc) {
-    Lexer lexer("let a = 2; let b = a; let c = b; print(c);");
+    
+    std::ifstream file("input.txt");
+    std::string input((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    Lexer lexer(input);
     lexer.TokenizeInput();
 
     Parser parser(lexer);
