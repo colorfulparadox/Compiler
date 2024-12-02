@@ -27,6 +27,10 @@ public:
         this->right_val = val;
     }
 
+    char GetOp() {
+        return this->value;
+    }
+
     virtual int GetValue() {
         switch (this->value) {
             case '+':

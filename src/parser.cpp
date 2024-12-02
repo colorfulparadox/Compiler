@@ -49,7 +49,7 @@ void Parser::ParseScope(Executer& executer) {
     else if (t1.type == TokenType::OUTPUT && t2.type == TokenType::LPAREN) {
         this->expectTokens({t1.type, t2.type});
         ExprNode* result = this->parseExpr(executer.scope);
-        this->expectTokens({TokenType::SEMICOLON});
+        this->expectTokens({TokenType::RPAREN, TokenType::SEMICOLON});
 
         CodePrint* code = new CodePrint(result);
         executer.PushCode(code);
@@ -72,6 +72,7 @@ uint32_t opPrecedence(TokenType op) {
 
 void processOperator(std::stack<ExprNode*>& operandStack,  std::stack<ExprOP*>& operatorStack) {
     ExprOP* op = operatorStack.top();
+    //std::cout << "process op type: " << op->GetOp() << "\n";
     operatorStack.pop();
     op->right = operandStack.top();
     operandStack.pop();
@@ -85,51 +86,95 @@ void expressionSyntaxError(int line_num) {
     exit(EXIT_FAILURE);
 }
 
+
+void Parser::expr(std::vector<Token>& list) {
+    term(list);
+    Token t1 = this->peekToken(1);
+
+    while (t1.type == TokenType::PLUS ||  t1.type == TokenType::MINUS
+    || t1.type == TokenType::MULT ||  t1.type == TokenType::DIV) {
+        this->expectToken(t1.type);
+        list.emplace_back(t1);
+        term(list);
+        t1 = this->peekToken(1);
+    }
+    if (t1.type == NUM || t1.type == ID) {
+        expressionSyntaxError(t1.line_num);
+    }
+}
+
+void Parser::term(std::vector<Token>& list) {
+    Token t1 = this->peekToken(1);
+    if (t1.type == NUM || t1.type == ID) {
+        this->expectToken(t1.type);
+        list.emplace_back(t1);
+    }
+    else if (t1.type == LPAREN) {
+        list.emplace_back(this->peekToken(1)); // '('
+        this->expectToken(LPAREN);
+        expr(list);                                 // EXPR
+        list.emplace_back(this->peekToken(1)); // ')'
+        this->expectToken(RPAREN);
+    }
+    else {
+        expressionSyntaxError(t1.line_num);
+    }
+}
+
 ExprNode* Parser::parseExpr(Scope *scope) {
-    auto token = this->peekToken(1);
-    
+    int exprPos = 0;
+    std::vector<Token> list;
+    list.reserve(6);
+    this->expr(list);
+
     std::stack<ExprNode*> operandStack;
     std::stack<ExprOP*> operatorStack;
 
-    bool lastTokenOp = true;
-    while (token.type != TokenType::SEMICOLON) {
-        if (token.type == TokenType::NUM && lastTokenOp) {
-            //std::cout << "num\n";
+    while (exprPos < list.size()) {
+        auto token = list.at(exprPos);
+
+        if (token.type == TokenType::NUM) {
             operandStack.push(new ExprNum(token));
-            lastTokenOp = false;
         }
-        else if (token.type == TokenType::ID && lastTokenOp) {
-           // std::cout << "id\n";
+        else if (token.type == TokenType::ID) {
             uint32_t offset = scope->GetSymbol(token.lexeme)->offset;
             operandStack.push(new ExprVarAccess(offset));
-            lastTokenOp = false;
         }
         else if ((token.type == TokenType::PLUS || token.type == TokenType::MINUS
-        || token.type == TokenType::MULT || token.type == TokenType::DIV) && !lastTokenOp) {
+        || token.type == TokenType::MULT || token.type == TokenType::DIV)) {
             while(operatorStack.size() != 0 && opPrecedence(operatorStack.top()->type) >= opPrecedence(token.type)) {
                 processOperator(operandStack, operatorStack);
             }
             operatorStack.push(new ExprOP(token));
-            lastTokenOp = true;
         }
         else if (token.type == TokenType::LPAREN) {
             operatorStack.push(new ExprOP(token));
-            lastTokenOp = true;
         }
-        else if (token.type == TokenType::RPAREN && this->peekToken(2).type != TokenType::SEMICOLON) {
+        else if (token.type == TokenType::RPAREN) {
             while (operatorStack.size() != 0 && operatorStack.top()->type != TokenType::LPAREN) {
                 processOperator(operandStack, operatorStack);
             }
             operatorStack.pop();
         }
-        else if (lastTokenOp || (!lastTokenOp && token.type == NUM) || (!lastTokenOp && token.type == ID)) {
-            expressionSyntaxError(token.line_num);
-        }
 
-        expectToken(token.type);
-        token = this->peekToken(1);
-        //token.Print();
+        exprPos += 1;
     }
+
+    //std::cout << ":: END LOOP BEGINS HERE ::\n";
+
+    /*
+    auto a = operatorStack;
+    auto b = operandStack;
+    while (!a.empty()) {
+        std::cout << "opStack: " << a.top()->GetOp() << "\n";
+        a.pop();
+    }
+    while (!b.empty()) {
+        std::cout << "operandStack: " << b.top()->GetValue() << "\n";
+        b.pop();
+    }
+    */
+
     while (operatorStack.size() != 0) {
         if (operatorStack.top()->type == TokenType::LPAREN) {
             operatorStack.pop();
@@ -137,5 +182,6 @@ ExprNode* Parser::parseExpr(Scope *scope) {
         processOperator(operandStack, operatorStack);
     }
 
+    //std::cout << "end of parseExpr\n";
     return operandStack.top();
 }

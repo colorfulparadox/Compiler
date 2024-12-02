@@ -22,6 +22,9 @@ private:
     const std::vector<Token>& tokens;
     [[maybe_unused]] const Lexer& _lexer; //keep it alive
 
+    void term(std::vector<Token>& list);
+    void expr(std::vector<Token>& list);
+
     void expectTokens(std::vector<TokenType> list) {
         for (int i = 0; i < list.size(); i++) {
             this->expectToken(list[i]);
